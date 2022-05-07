@@ -1,6 +1,5 @@
 import { GPU } from "./modules/gpu";
 import { Vector3 } from "./modules/vec3";
-import { Ray } from "./modules/ray";
 
 let gpu = new GPU();
 
@@ -25,7 +24,12 @@ function unitVectorZ(vx, vy, vz) {
   return div * vz;
 }
 
-function rayColor(rd_ux, rd_uy, rd_uz) {
+function dot(v1_x, v1_y, v1_z, v2_x, v2_y, v2_z) {
+  return v1_x * v2_x + v1_y * v2_y + v1_z * v2_z;
+}
+
+function rayColor(rd_ux, rd_uy, rd_uz, isHitSphere) {
+  if (isHitSphere <= 0) return [1, 0, 0];
   let t = 0.5 * (rd_uy + 1.0);
   let color = [
     (1 - t) * 1 + t * 0.5,
@@ -36,7 +40,39 @@ function rayColor(rd_ux, rd_uy, rd_uz) {
   return color;
 }
 
-let kernelFunctions = [unitVectorX, unitVectorY, unitVectorZ, rayColor];
+function hitSphere(
+  cx,
+  cy,
+  cz,
+  radius,
+  ro_x,
+  ro_y,
+  ro_z,
+  rd_x,
+  rd_y,
+  rd_z,
+  rd_dot_rd,
+  oc_dot_rd,
+  oc_dot_oc
+) {
+  let oc = [ro_x - cx, rd_y - cy, rd_z - cz];
+  let a = rd_dot_rd;
+  let b = 2 * oc_dot_rd;
+  let c = oc_dot_oc - radius * radius;
+  let discriminant = b * b - 4 * a * c;
+  let result = 1;
+  if (discriminant > 0) result = -1;
+  return result;
+}
+
+let kernelFunctions = [
+  unitVectorX,
+  unitVectorY,
+  unitVectorZ,
+  dot,
+  rayColor,
+  hitSphere,
+];
 kernelFunctions.forEach((f) => gpu.addFunction(f));
 
 /**********
@@ -85,8 +121,8 @@ const settings = {
   graphical: true,
 };
 const render = gpu.createKernel(function (w, h, camera) {
-  let v = this.thread.x / w;
-  let u = this.thread.y / h;
+  let u = this.thread.x / w;
+  let v = this.thread.y / h;
   //ray
   let horizontal_x = camera[1][0];
   let horizontal_y = camera[1][1];
@@ -102,7 +138,6 @@ const render = gpu.createKernel(function (w, h, camera) {
 
   //ray
   let ro_x = camera[0][0];
-  ``;
   let ro_y = camera[0][1];
   let ro_z = camera[0][2];
 
@@ -113,7 +148,36 @@ const render = gpu.createKernel(function (w, h, camera) {
   let rd_ux = unitVectorX(rd_x, rd_y, rd_z);
   let rd_uy = unitVectorX(rd_x, rd_y, rd_z);
   let rd_uz = unitVectorX(rd_x, rd_y, rd_z);
-  let pixelColor = rayColor(rd_ux, rd_uy, rd_uz);
+
+  //sphere
+  let c_x = 0;
+  let c_y = 0;
+  let c_z = -1;
+  let radius = 0.5;
+
+  let oc_x = ro_x - c_x;
+  let oc_y = ro_y - c_y;
+  let oc_z = ro_z - c_z;
+
+  let rd_dot_rd = dot(rd_x, rd_y, rd_z, rd_x, rd_y, rd_z);
+  let oc_dot_rd = dot(oc_x, oc_y, oc_z, rd_x, rd_y, rd_z);
+  let oc_dot_oc = dot(oc_x, oc_y, oc_z, oc_x, oc_y, oc_z);
+  let isHitSphere = hitSphere(
+    c_x,
+    c_y,
+    c_z,
+    radius,
+    ro_x,
+    ro_y,
+    ro_z,
+    rd_x,
+    rd_y,
+    rd_z,
+    rd_dot_rd,
+    oc_dot_rd,
+    oc_dot_oc
+  );
+  let pixelColor = rayColor(rd_ux, rd_uy, rd_uz, isHitSphere);
 
   this.color(pixelColor[0], pixelColor[1], pixelColor[2], 1);
 }, settings);
