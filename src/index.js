@@ -1,5 +1,5 @@
 import { GPU } from "./modules/gpu";
-import { Vector3 } from "./modules/vec3";
+import { Vector3, normalize, cross } from "./modules/vec3";
 
 let gpu = new GPU();
 
@@ -26,6 +26,11 @@ function unitVectorZ(vx, vy, vz) {
 
 function dot(v1_x, v1_y, v1_z, v2_x, v2_y, v2_z) {
   return v1_x * v2_x + v1_y * v2_y + v1_z * v2_z;
+}
+
+function degreesToRadians(degrees) {
+  var pi = Math.PI;
+  return degrees * (pi / 180);
 }
 
 function intersectRaySphere(
@@ -60,6 +65,7 @@ let kernelFunctions = [
   unitVectorY,
   unitVectorZ,
   dot,
+  degreesToRadians,
   intersectRaySphere,
 ];
 kernelFunctions.forEach((f) => gpu.addFunction(f));
@@ -74,17 +80,31 @@ const imageWidth = 1024,
 /***********
  * Camera *
  ***********/
-const viewPortHeight = 2;
-const viewPortWidth = aspectRatio * viewPortHeight;
-const focalLength = 1;
+// const viewPortHeight = 2;
+// const viewPortWidth = aspectRatio * viewPortHeight;
+// const focalLength = 1;
 
-const origin = new Vector3(0, 0, 0);
-const horizontal = new Vector3(viewPortWidth, 0, 0);
-const vertical = new Vector3(0, viewPortHeight, 0);
+let lookfrom = new Vector3(1, 0.5, 4);
+let lookat = new Vector3(0.5, 0, -1);
+let vup = new Vector3(0, 1, 0);
+let vfov = 35;
+
+let thera = degreesToRadians(vfov);
+let h = Math.tan(thera / 2);
+let viewportHeight = 2 * h;
+let viewportWidth = aspectRatio * viewportHeight;
+
+let w = normalize(lookfrom.sub(lookat));
+let u = normalize(cross(vup, w));
+let v = cross(w, u);
+
+const origin = lookfrom;
+const horizontal = u.multiplyScalar(viewportWidth);
+const vertical = v.multiplyScalar(viewportHeight);
 const lowerLeftCorner = origin
   .sub(horizontal.divideScalar(2))
   .sub(vertical.divideScalar(2))
-  .sub(new Vector3(0, 0, focalLength));
+  .sub(w);
 
 /*********
  * Light *
@@ -105,14 +125,14 @@ const directionalLookAt = new Vector3(1, 4, 4);
  **********/
 
 const sphereCenter = new Vector3(0, 0, -1);
-const sphereColor = new Vector3(0.1, 0.4, 0.2);
+const sphereColor = new Vector3(0.5, 0.4, 0.2);
 const sphereRadius = 0.5;
 const sphereShine = 65;
 
-const sphereCenter2 = new Vector3(0, 0, -1);
-const sphereColor2 = new Vector3(0.1, 0.4, 0.2);
-const sphereRadius2 = 0.5;
-const sphereShine2 = 65;
+const sphereCenter2 = new Vector3(0, -100.5, -1.0);
+const sphereColor2 = new Vector3(0.0, 0.5, 0);
+const sphereRadius2 = 100;
+const sphereShine2 = 1;
 
 /************
  * to array *
@@ -210,11 +230,12 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
   let rd_y = lowerLeftCorner_y + u * horizontal_y + v * vertical_y - ro_y;
   let rd_z = lowerLeftCorner_z + u * horizontal_z + v * vertical_z - ro_z;
 
-  let rd_ux = unitVectorX(rd_x, rd_y, rd_z);
-  let rd_uy = unitVectorX(rd_x, rd_y, rd_z);
-  let rd_uz = unitVectorX(rd_x, rd_y, rd_z);
+  // let rd_ux = unitVectorX(rd_x, rd_y, rd_z);
+  // let rd_uy = unitVectorX(rd_x, rd_y, rd_z);
+  // let rd_uz = unitVectorX(rd_x, rd_y, rd_z);
 
-  //sphere
+  //closest sphere init
+  let closest_t = this.constants.INFINITY;
   let c_x = 0;
   let c_y = 0;
   let c_z = 0;
@@ -224,39 +245,62 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
   let radius = 0;
   let shine = 0;
 
-  // let closest_t = this.constants.INFINITY;
-  // find closest_sphere
+  let t_min = 0;
+  let t_max = this.constants.INFINITY;
+
+  //#region find closest_t
   for (let i = 0; i < this.constants.SPHERESCOUNT; i++) {
-    // closest_sphere
     c_x = spheres[i][0];
     c_y = spheres[i][1];
     c_z = spheres[i][2];
-    sc_r = spheres[i][3];
-    sc_g = spheres[i][4];
-    sc_b = spheres[i][5];
     radius = spheres[i][6];
-    shine = spheres[i][7];
+
+    let oc_x = ro_x - c_x;
+    let oc_y = ro_y - c_y;
+    let oc_z = ro_z - c_z;
+
+    let rd_dot_rd = dot(rd_x, rd_y, rd_z, rd_x, rd_y, rd_z);
+    let oc_dot_rd = dot(oc_x, oc_y, oc_z, rd_x, rd_y, rd_z);
+    let oc_dot_oc = dot(oc_x, oc_y, oc_z, oc_x, oc_y, oc_z);
+    let ts = intersectRaySphere(
+      c_x,
+      c_y,
+      c_z,
+      radius,
+      ro_x,
+      ro_y,
+      ro_z,
+      rd_dot_rd,
+      oc_dot_rd,
+      oc_dot_oc
+    );
+    if (ts[0] < closest_t && t_min < ts[0] && ts[0] < t_max) {
+      closest_t = ts[0];
+
+      c_x = spheres[i][0];
+      c_y = spheres[i][1];
+      c_z = spheres[i][2];
+      sc_r = spheres[i][3];
+      sc_g = spheres[i][4];
+      sc_b = spheres[i][5];
+      radius = spheres[i][6];
+      shine = spheres[i][7];
+    }
+    if (ts[1] < closest_t && t_min < ts[1] && ts[1] < t_max) {
+      closest_t = ts[1];
+
+      c_x = spheres[i][0];
+      c_y = spheres[i][1];
+      c_z = spheres[i][2];
+      sc_r = spheres[i][3];
+      sc_g = spheres[i][4];
+      sc_b = spheres[i][5];
+      radius = spheres[i][6];
+      shine = spheres[i][7];
+    }
+    // closest_sphere
   }
-
-  let oc_x = ro_x - c_x;
-  let oc_y = ro_y - c_y;
-  let oc_z = ro_z - c_z;
-
-  let rd_dot_rd = dot(rd_x, rd_y, rd_z, rd_x, rd_y, rd_z);
-  let oc_dot_rd = dot(oc_x, oc_y, oc_z, rd_x, rd_y, rd_z);
-  let oc_dot_oc = dot(oc_x, oc_y, oc_z, oc_x, oc_y, oc_z);
-  let closest_t = intersectRaySphere(
-    c_x,
-    c_y,
-    c_z,
-    radius,
-    ro_x,
-    ro_y,
-    ro_z,
-    rd_dot_rd,
-    oc_dot_rd,
-    oc_dot_oc
-  )[0];
+  //#endregion
 
   //#region compute lighting
   let lighting = 0;
@@ -337,7 +381,7 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
   //#endregion
 
   // backgroundColor
-  let t = 0.5 * (rd_uy + 1.0);
+  let t = 0.5 * 1.2;
   let backgroundColor = [
     (1 - t) * 1 + t * 0.5,
     (1 - t) * 1 + t * 0.7,
