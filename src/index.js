@@ -33,19 +33,7 @@ function degreesToRadians(degrees) {
   return degrees * (pi / 180);
 }
 
-function intersectRaySphere(
-  cx,
-  cy,
-  cz,
-  radius,
-  ro_x,
-  ro_y,
-  ro_z,
-  rd_dot_rd,
-  oc_dot_rd,
-  oc_dot_oc
-) {
-  let oc = [ro_x - cx, ro_y - cy, ro_z - cz];
+function intersectRaySphere(radius, rd_dot_rd, oc_dot_rd, oc_dot_oc) {
   let a = rd_dot_rd;
   let b = 2 * oc_dot_rd;
   let c = oc_dot_oc - radius * radius;
@@ -129,10 +117,10 @@ const sphereColor = new Vector3(0.5, 0.4, 0.2);
 const sphereRadius = 0.5;
 const sphereShine = 65;
 
-const sphereCenter2 = new Vector3(0, -100.5, -1.0);
+const sphereCenter2 = new Vector3(0, -100.5, -1);
 const sphereColor2 = new Vector3(0.0, 0.5, 0);
 const sphereRadius2 = 100;
-const sphereShine2 = 1;
+const sphereShine2 = 65;
 
 /************
  * to array *
@@ -245,36 +233,26 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
   let radius = 0;
   let shine = 0;
 
-  let t_min = 0;
+  let t_min = 0.001;
   let t_max = this.constants.INFINITY;
 
   //#region find closest_t
   for (let i = 0; i < this.constants.SPHERESCOUNT; i++) {
-    c_x = spheres[i][0];
-    c_y = spheres[i][1];
-    c_z = spheres[i][2];
-    radius = spheres[i][6];
+    //
+    let tc_x = spheres[i][0];
+    let tc_y = spheres[i][1];
+    let tc_z = spheres[i][2];
+    let t_radius = spheres[i][6];
 
-    let oc_x = ro_x - c_x;
-    let oc_y = ro_y - c_y;
-    let oc_z = ro_z - c_z;
+    let oc_x = ro_x - tc_x;
+    let oc_y = ro_y - tc_y;
+    let oc_z = ro_z - tc_z;
 
     let rd_dot_rd = dot(rd_x, rd_y, rd_z, rd_x, rd_y, rd_z);
     let oc_dot_rd = dot(oc_x, oc_y, oc_z, rd_x, rd_y, rd_z);
     let oc_dot_oc = dot(oc_x, oc_y, oc_z, oc_x, oc_y, oc_z);
-    let ts = intersectRaySphere(
-      c_x,
-      c_y,
-      c_z,
-      radius,
-      ro_x,
-      ro_y,
-      ro_z,
-      rd_dot_rd,
-      oc_dot_rd,
-      oc_dot_oc
-    );
-    if (ts[0] < closest_t && t_min < ts[0] && ts[0] < t_max) {
+    let ts = intersectRaySphere(t_radius, rd_dot_rd, oc_dot_rd, oc_dot_oc);
+    if (ts[0] < closest_t && t_min <= ts[0] && ts[0] <= t_max) {
       closest_t = ts[0];
 
       c_x = spheres[i][0];
@@ -286,7 +264,7 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
       radius = spheres[i][6];
       shine = spheres[i][7];
     }
-    if (ts[1] < closest_t && t_min < ts[1] && ts[1] < t_max) {
+    if (ts[1] < closest_t && t_min <= ts[1] && ts[1] <= t_max) {
       closest_t = ts[1];
 
       c_x = spheres[i][0];
