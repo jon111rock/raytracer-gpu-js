@@ -345,6 +345,43 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
       }
 
       // shadow
+      let shadow_ray_o_x = hitPoint_x;
+      let shadow_ray_o_y = hitPoint_y;
+      let shadow_ray_o_z = hitPoint_z;
+      let shadow_ray_d_x = L_x;
+      let shadow_ray_d_y = L_y;
+      let shadow_ray_d_z = L_z;
+
+      let shadow_t = this.constants.INFINITY;
+      for (let i = 0; i < this.constants.SPHERESCOUNT; i++) {
+        let current_sphere_center_x = spheres[i][0];
+        let current_sphere_center_y = spheres[i][1];
+        let current_sphere_center_z = spheres[i][2];
+        let current_sphere_radius = spheres[i][6];
+
+        let ts = intersectRaySphere(
+          current_sphere_center_x,
+          current_sphere_center_y,
+          current_sphere_center_z,
+          current_sphere_radius,
+          shadow_ray_o_x,
+          shadow_ray_o_y,
+          shadow_ray_o_z,
+          shadow_ray_d_x,
+          shadow_ray_d_y,
+          shadow_ray_d_z
+        );
+
+        if (ts[0] < closest_t && t_min <= ts[0] && ts[0] <= t_max) {
+          shadow_t = ts[0];
+        }
+        if (ts[1] < closest_t && t_min <= ts[1] && ts[1] <= t_max) {
+          shadow_t = ts[1];
+        }
+      }
+      if (shadow_t != this.constants.INFINITY) {
+        continue;
+      }
 
       // diffuse
       let N_dot_L = dot(
