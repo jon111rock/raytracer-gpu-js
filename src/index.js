@@ -34,14 +34,24 @@ function degreesToRadians(degrees) {
 }
 
 function intersectRaySphere(
-  closest_sphere_radius,
-  rd_dot_rd,
-  oc_dot_rd,
-  oc_dot_oc
+  sphere_center_x,
+  sphere_center_y,
+  sphere_center_z,
+  sphere_radius,
+  ray_o_x,
+  ray_o_y,
+  ray_o_z,
+  ray_d_x,
+  ray_d_y,
+  ray_d_z
 ) {
-  let a = rd_dot_rd;
-  let b = 2 * oc_dot_rd;
-  let c = oc_dot_oc - closest_sphere_radius * closest_sphere_radius;
+  let oc_x = ray_o_x - sphere_center_x;
+  let oc_y = ray_o_y - sphere_center_y;
+  let oc_z = ray_o_z - sphere_center_z;
+  let a = ray_d_x * ray_d_x + ray_d_y * ray_d_y + ray_d_z * ray_d_z;
+  let b = 2 * (oc_x * ray_d_x + oc_y * ray_d_y + oc_z * ray_d_z);
+  let c =
+    oc_x * oc_x + oc_y * oc_y + oc_z * oc_z - sphere_radius * sphere_radius;
   let discriminant = b * b - 4 * a * c;
   if (discriminant < 0) {
     return [this.constants.INFINITY, this.constants.INFINITY];
@@ -215,17 +225,17 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
   let lowerLeftCorner_z = camera[3][2];
 
   //ray
-  let ro_x = camera[0][0];
-  let ro_y = camera[0][1];
-  let ro_z = camera[0][2];
+  let ray_o_x = camera[0][0];
+  let ray_o_y = camera[0][1];
+  let ray_o_z = camera[0][2];
 
-  let rd_x = lowerLeftCorner_x + u * horizontal_x + v * vertical_x - ro_x;
-  let rd_y = lowerLeftCorner_y + u * horizontal_y + v * vertical_y - ro_y;
-  let rd_z = lowerLeftCorner_z + u * horizontal_z + v * vertical_z - ro_z;
+  let ray_d_x = lowerLeftCorner_x + u * horizontal_x + v * vertical_x - ray_o_x;
+  let ray_d_y = lowerLeftCorner_y + u * horizontal_y + v * vertical_y - ray_o_y;
+  let ray_d_z = lowerLeftCorner_z + u * horizontal_z + v * vertical_z - ray_o_z;
 
-  // let rd_ux = unitVectorX(rd_x, rd_y, rd_z);
-  // let rd_uy = unitVectorX(rd_x, rd_y, rd_z);
-  // let rd_uz = unitVectorX(rd_x, rd_y, rd_z);
+  // let rd_ux = unitVectorX(ray_d_x, ray_d_y, ray_d_z);
+  // let rd_uy = unitVectorX(ray_d_x, ray_d_y, ray_d_z);
+  // let rd_uz = unitVectorX(ray_d_x, ray_d_y, ray_d_z);
 
   //closest sphere init
   let closest_t = this.constants.INFINITY;
@@ -249,18 +259,24 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
     let current_sphere_center_z = spheres[i][2];
     let current_sphere_radius = spheres[i][6];
 
-    let oc_x = ro_x - current_sphere_center_x;
-    let oc_y = ro_y - current_sphere_center_y;
-    let oc_z = ro_z - current_sphere_center_z;
+    let oc_x = ray_o_x - current_sphere_center_x;
+    let oc_y = ray_o_y - current_sphere_center_y;
+    let oc_z = ray_o_z - current_sphere_center_z;
 
-    let rd_dot_rd = dot(rd_x, rd_y, rd_z, rd_x, rd_y, rd_z);
-    let oc_dot_rd = dot(oc_x, oc_y, oc_z, rd_x, rd_y, rd_z);
-    let oc_dot_oc = dot(oc_x, oc_y, oc_z, oc_x, oc_y, oc_z);
+    // let rd_dot_rd = dot(ray_d_x, ray_d_y, ray_d_z, ray_d_x, ray_d_y, ray_d_z);
+    // let oc_dot_rd = dot(oc_x, oc_y, oc_z, ray_d_x, ray_d_y, ray_d_z);
+    // let oc_dot_oc = dot(oc_x, oc_y, oc_z, oc_x, oc_y, oc_z);
     let ts = intersectRaySphere(
+      current_sphere_center_x,
+      current_sphere_center_y,
+      current_sphere_center_z,
       current_sphere_radius,
-      rd_dot_rd,
-      oc_dot_rd,
-      oc_dot_oc
+      ray_o_x,
+      ray_o_y,
+      ray_o_z,
+      ray_d_x,
+      ray_d_y,
+      ray_d_z
     );
     if (ts[0] < closest_t && t_min <= ts[0] && ts[0] <= t_max) {
       closest_t = ts[0];
@@ -292,9 +308,9 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
 
   //#region compute lighting
   let lighting = 0;
-  let hitPoint_x = ro_x + closest_t * rd_x;
-  let hitPoint_y = ro_y + closest_t * rd_y;
-  let hitPoint_z = ro_z + closest_t * rd_z;
+  let hitPoint_x = ray_o_x + closest_t * ray_d_x;
+  let hitPoint_y = ray_o_y + closest_t * ray_d_y;
+  let hitPoint_z = ray_o_z + closest_t * ray_d_z;
 
   let hitNormal_x = hitPoint_x - closest_sphere_center_x;
   let hitNormal_y = hitPoint_y - closest_sphere_center_y;
@@ -328,6 +344,8 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
         L_z = lightPosition_z;
       }
 
+      // shadow
+
       // diffuse
       let N_dot_L = dot(
         hitNormal_ux,
@@ -352,9 +370,9 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
         let R_x = 2 * hitNormal_ux * N_dot_L - L_x;
         let R_y = 2 * hitNormal_uy * N_dot_L - L_y;
         let R_z = 2 * hitNormal_uz * N_dot_L - L_z;
-        let V_x = -1 * rd_x;
-        let V_y = -1 * rd_y;
-        let V_z = -1 * rd_z;
+        let V_x = -1 * ray_d_x;
+        let V_y = -1 * ray_d_y;
+        let V_z = -1 * ray_d_z;
         let R_dot_V = dot(R_x, R_y, R_z, V_x, V_y, V_z);
         let length_R = Math.sqrt(R_x * R_x + R_y * R_y + R_z * R_z);
         let length_V = Math.sqrt(V_x * V_x + V_y * V_y + V_z * V_z);
