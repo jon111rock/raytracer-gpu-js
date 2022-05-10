@@ -33,10 +33,15 @@ function degreesToRadians(degrees) {
   return degrees * (pi / 180);
 }
 
-function intersectRaySphere(radius, rd_dot_rd, oc_dot_rd, oc_dot_oc) {
+function intersectRaySphere(
+  closest_sphere_radius,
+  rd_dot_rd,
+  oc_dot_rd,
+  oc_dot_oc
+) {
   let a = rd_dot_rd;
   let b = 2 * oc_dot_rd;
-  let c = oc_dot_oc - radius * radius;
+  let c = oc_dot_oc - closest_sphere_radius * closest_sphere_radius;
   let discriminant = b * b - 4 * a * c;
   if (discriminant < 0) {
     return [this.constants.INFINITY, this.constants.INFINITY];
@@ -158,7 +163,7 @@ const lights = [
 ];
 // 0
 // 0 1 2 3 4 5 6 7
-// center_x, center_y, center_z, color_r, color_g, color_b, radius, shine
+// center_x, center_y, center_z, color_r, color_g, color_b, closest_sphere_radius, closest_sphere_shine
 const spheres = [
   [
     sphereCenter.toArray()[0],
@@ -224,14 +229,14 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
 
   //closest sphere init
   let closest_t = this.constants.INFINITY;
-  let c_x = 0;
-  let c_y = 0;
-  let c_z = 0;
-  let sc_r = 0;
-  let sc_g = 0;
-  let sc_b = 0;
-  let radius = 0;
-  let shine = 0;
+  let closest_sphere_center_x = 0;
+  let closest_sphere_center_y = 0;
+  let closest_sphere_center_z = 0;
+  let closest_sphere_color_r = 0;
+  let closest_sphere_color_g = 0;
+  let closest_sphere_color_b = 0;
+  let closest_sphere_radius = 0;
+  let closest_sphere_shine = 0;
 
   let t_min = 0.001;
   let t_max = this.constants.INFINITY;
@@ -239,42 +244,47 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
   //#region find closest_t
   for (let i = 0; i < this.constants.SPHERESCOUNT; i++) {
     //
-    let tc_x = spheres[i][0];
-    let tc_y = spheres[i][1];
-    let tc_z = spheres[i][2];
-    let t_radius = spheres[i][6];
+    let current_sphere_center_x = spheres[i][0];
+    let current_sphere_center_y = spheres[i][1];
+    let current_sphere_center_z = spheres[i][2];
+    let current_sphere_radius = spheres[i][6];
 
-    let oc_x = ro_x - tc_x;
-    let oc_y = ro_y - tc_y;
-    let oc_z = ro_z - tc_z;
+    let oc_x = ro_x - current_sphere_center_x;
+    let oc_y = ro_y - current_sphere_center_y;
+    let oc_z = ro_z - current_sphere_center_z;
 
     let rd_dot_rd = dot(rd_x, rd_y, rd_z, rd_x, rd_y, rd_z);
     let oc_dot_rd = dot(oc_x, oc_y, oc_z, rd_x, rd_y, rd_z);
     let oc_dot_oc = dot(oc_x, oc_y, oc_z, oc_x, oc_y, oc_z);
-    let ts = intersectRaySphere(t_radius, rd_dot_rd, oc_dot_rd, oc_dot_oc);
+    let ts = intersectRaySphere(
+      current_sphere_radius,
+      rd_dot_rd,
+      oc_dot_rd,
+      oc_dot_oc
+    );
     if (ts[0] < closest_t && t_min <= ts[0] && ts[0] <= t_max) {
       closest_t = ts[0];
 
-      c_x = spheres[i][0];
-      c_y = spheres[i][1];
-      c_z = spheres[i][2];
-      sc_r = spheres[i][3];
-      sc_g = spheres[i][4];
-      sc_b = spheres[i][5];
-      radius = spheres[i][6];
-      shine = spheres[i][7];
+      closest_sphere_center_x = spheres[i][0];
+      closest_sphere_center_y = spheres[i][1];
+      closest_sphere_center_z = spheres[i][2];
+      closest_sphere_color_r = spheres[i][3];
+      closest_sphere_color_g = spheres[i][4];
+      closest_sphere_color_b = spheres[i][5];
+      closest_sphere_radius = spheres[i][6];
+      closest_sphere_shine = spheres[i][7];
     }
     if (ts[1] < closest_t && t_min <= ts[1] && ts[1] <= t_max) {
       closest_t = ts[1];
 
-      c_x = spheres[i][0];
-      c_y = spheres[i][1];
-      c_z = spheres[i][2];
-      sc_r = spheres[i][3];
-      sc_g = spheres[i][4];
-      sc_b = spheres[i][5];
-      radius = spheres[i][6];
-      shine = spheres[i][7];
+      closest_sphere_center_x = spheres[i][0];
+      closest_sphere_center_y = spheres[i][1];
+      closest_sphere_center_z = spheres[i][2];
+      closest_sphere_color_r = spheres[i][3];
+      closest_sphere_color_g = spheres[i][4];
+      closest_sphere_color_b = spheres[i][5];
+      closest_sphere_radius = spheres[i][6];
+      closest_sphere_shine = spheres[i][7];
     }
     // closest_sphere
   }
@@ -286,9 +296,9 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
   let hitPoint_y = ro_y + closest_t * rd_y;
   let hitPoint_z = ro_z + closest_t * rd_z;
 
-  let hitNormal_x = hitPoint_x - c_x;
-  let hitNormal_y = hitPoint_y - c_y;
-  let hitNormal_z = hitPoint_z - c_z;
+  let hitNormal_x = hitPoint_x - closest_sphere_center_x;
+  let hitNormal_y = hitPoint_y - closest_sphere_center_y;
+  let hitNormal_z = hitPoint_z - closest_sphere_center_z;
   let hitNormal_ux = unitVectorX(hitNormal_x, hitNormal_y, hitNormal_z);
   let hitNormal_uy = unitVectorY(hitNormal_x, hitNormal_y, hitNormal_z);
   let hitNormal_uz = unitVectorZ(hitNormal_x, hitNormal_y, hitNormal_z);
@@ -338,7 +348,7 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
       }
 
       // Specular
-      if (shine != -1) {
+      if (closest_sphere_shine != -1) {
         let R_x = 2 * hitNormal_ux * N_dot_L - L_x;
         let R_y = 2 * hitNormal_uy * N_dot_L - L_y;
         let R_z = 2 * hitNormal_uz * N_dot_L - L_z;
@@ -351,7 +361,8 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
 
         if (R_dot_V > 0) {
           lighting +=
-            lightIntensity * Math.pow(R_dot_V / (length_R * length_V), shine);
+            lightIntensity *
+            Math.pow(R_dot_V / (length_R * length_V), closest_sphere_shine);
         }
       }
     }
@@ -367,7 +378,12 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
   ];
 
   if (closest_t != this.constants.INFINITY) {
-    this.color(sc_r * lighting, sc_g * lighting, sc_b * lighting, 1);
+    this.color(
+      closest_sphere_color_r * lighting,
+      closest_sphere_color_g * lighting,
+      closest_sphere_color_b * lighting,
+      1
+    );
   } else {
     this.color(backgroundColor[0], backgroundColor[1], backgroundColor[2], 1);
   }
