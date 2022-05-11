@@ -736,4 +736,4 @@ setInterval(() => {
 
 render(imageWidth, imageHeight, camera, lights, spheres);
 const canvas = render.canvas;
-document.body.appendChild(canvas);
+document.getElementById("root").appendChild(canvas);
