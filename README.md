@@ -1,3 +1,3 @@
 # GPU RayTracing in JavaScript
 
-DEMO
+[DEMO](https://jon111rock.github.io/raytracer-gpu-js/)

@@ -1,0 +1,40 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+input {
+  width: 3rem;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+
+.display {
+  max-width: 1300px;
+}
+
+.control {
+  padding: 1rem 0;
+}
+
+.control-list {
+  list-style: none;
+  display: flex;
+  gap: 3rem;
+}
+
+.attribute-list {
+  list-style: none;
+}
+.attribute-item {
+  margin-top: 0.5rem;
+}
+
+.position-list {
+  list-style: none;
+}
