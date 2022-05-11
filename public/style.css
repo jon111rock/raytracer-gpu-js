@@ -22,19 +22,18 @@ input {
   padding: 1rem 0;
 }
 
+/* Control panel */
 .control-list {
   list-style: none;
   display: flex;
   gap: 3rem;
 }
-
 .attribute-list {
   list-style: none;
 }
 .attribute-item {
   margin-top: 0.5rem;
 }
-
 .position-list {
   list-style: none;
 }
