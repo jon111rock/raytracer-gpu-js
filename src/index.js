@@ -2,6 +2,7 @@ import { GPU } from "./modules/gpu";
 import { Vector3, normalize, cross } from "./modules/vec3";
 import spheres from "./Objects/Sphere";
 import lights from "./Objects/Lights";
+import "./style.css";
 
 let gpu = new GPU();
 
