@@ -1,5 +1,6 @@
 import { GPU } from "./modules/gpu";
 import { Vector3, normalize, cross } from "./modules/vec3";
+import spheres from "./Objects/Sphere";
 
 let gpu = new GPU();
 
@@ -72,6 +73,32 @@ function reflectVector(ray_x, ray_y, ray_z, normal_x, normal_y, normal_z) {
   ];
 }
 
+function createCamera(lookfrom, lookat, vup, vfov) {
+  let thera = degreesToRadians(vfov);
+  let h = Math.tan(thera / 2);
+  let viewportHeight = 2 * h;
+  let viewportWidth = aspectRatio * viewportHeight;
+
+  let w = normalize(lookfrom.sub(lookat));
+  let u = normalize(cross(vup, w));
+  let v = cross(w, u);
+
+  const origin = lookfrom;
+  const horizontal = u.multiplyScalar(viewportWidth);
+  const vertical = v.multiplyScalar(viewportHeight);
+  const lowerLeftCorner = origin
+    .sub(horizontal.divideScalar(2))
+    .sub(vertical.divideScalar(2))
+    .sub(w);
+
+  return [
+    origin.toArray(),
+    horizontal.toArray(),
+    vertical.toArray(),
+    lowerLeftCorner.toArray(),
+  ];
+}
+
 let kernelFunctions = [
   unitVectorX,
   unitVectorY,
@@ -87,10 +114,8 @@ kernelFunctions.forEach((f) => gpu.addFunction(f));
  * Image *
  **********/
 const aspectRatio = 16 / 9;
-const imageWidth = 1024,
+const imageWidth = 800,
   imageHeight = parseInt(imageWidth / aspectRatio);
-
-const image = [imageWidth, imageHeight];
 
 /***********
  * Camera *
@@ -99,31 +124,10 @@ const image = [imageWidth, imageHeight];
 let lookfrom = new Vector3(1, 0.5, 4);
 let lookat = new Vector3(0.5, 0, -1);
 let vup = new Vector3(0, 1, 0);
-let vfov = 35;
+let vfov = 36;
 
-let thera = degreesToRadians(vfov);
-let h = Math.tan(thera / 2);
-let viewportHeight = 2 * h;
-let viewportWidth = aspectRatio * viewportHeight;
+let camera = createCamera(lookfrom, lookat, vup, vfov);
 
-let w = normalize(lookfrom.sub(lookat));
-let u = normalize(cross(vup, w));
-let v = cross(w, u);
-
-const origin = lookfrom;
-const horizontal = u.multiplyScalar(viewportWidth);
-const vertical = v.multiplyScalar(viewportHeight);
-const lowerLeftCorner = origin
-  .sub(horizontal.divideScalar(2))
-  .sub(vertical.divideScalar(2))
-  .sub(w);
-
-const camera = [
-  origin.toArray(),
-  horizontal.toArray(),
-  vertical.toArray(),
-  lowerLeftCorner.toArray(),
-];
 /*********
  * Light *
  *********/
@@ -156,80 +160,6 @@ const lights = [
   ],
 ];
 
-/**********
- * Sphere *
- **********/
-
-const sphereCenter = new Vector3(-0.3, 0.1, -1);
-const sphereColor = new Vector3(0.8, 0.7, 0.5);
-const sphereRadius = 0.5;
-const sphereShine = 65;
-const reflect = 0;
-
-const sphereCenter2 = new Vector3(0, -100.5, -1);
-const sphereColor2 = new Vector3(0.1, 0.9, 0.1);
-const sphereRadius2 = 100;
-const sphereShine2 = 65;
-const reflect2 = 0.1;
-
-const sphereCenter3 = new Vector3(0.7, 0.1, -1);
-const sphereColor3 = new Vector3(0.5, 0.3, 0.2);
-const sphereRadius3 = 0.4;
-const sphereShine3 = 65;
-const reflect3 = 0.4;
-
-const sphereCenter4 = new Vector3(1.5, 0, -0.75);
-const sphereColor4 = new Vector3(0.5, 0.3, 0.2);
-const sphereRadius4 = 0.25;
-const sphereShine4 = 30;
-const reflect4 = 0.4;
-
-const spheres = [
-  [
-    sphereCenter.toArray()[0], // [0] center x
-    sphereCenter.toArray()[1], // [1] center y
-    sphereCenter.toArray()[2], // [2] center z
-    sphereColor.toArray()[0], // [3] color r
-    sphereColor.toArray()[1], // [4] color g
-    sphereColor.toArray()[2], // [5] color b
-    sphereRadius, // radius
-    sphereShine, // shine
-    reflect, // reflect
-  ],
-  [
-    sphereCenter2.toArray()[0],
-    sphereCenter2.toArray()[1],
-    sphereCenter2.toArray()[2],
-    sphereColor2.toArray()[0],
-    sphereColor2.toArray()[1],
-    sphereColor2.toArray()[2],
-    sphereRadius2,
-    sphereShine2,
-    reflect2,
-  ],
-  [
-    sphereCenter3.toArray()[0],
-    sphereCenter3.toArray()[1],
-    sphereCenter3.toArray()[2],
-    sphereColor3.toArray()[0],
-    sphereColor3.toArray()[1],
-    sphereColor3.toArray()[2],
-    sphereRadius3,
-    sphereShine3,
-    reflect3,
-  ],
-  [
-    sphereCenter4.toArray()[0],
-    sphereCenter4.toArray()[1],
-    sphereCenter4.toArray()[2],
-    sphereColor4.toArray()[0],
-    sphereColor4.toArray()[1],
-    sphereColor4.toArray()[2],
-    sphereRadius4,
-    sphereShine4,
-    reflect4,
-  ],
-];
 /***********
  * Kernael *
  ***********/
@@ -725,6 +655,7 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
  **********/
 
 // animation
+
 let i = 0.01;
 setInterval(() => {
   if (spheres[2][1] >= 1) i = -0.01;
