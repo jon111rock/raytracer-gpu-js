@@ -1,6 +1,7 @@
 import { GPU } from "./modules/gpu";
 import { Vector3, normalize, cross } from "./modules/vec3";
 import spheres from "./Objects/Sphere";
+import lights from "./Objects/Lights";
 
 let gpu = new GPU();
 
@@ -120,45 +121,11 @@ const imageWidth = 800,
 /***********
  * Camera *
  ***********/
-
 let lookfrom = new Vector3(1, 0.5, 4);
 let lookat = new Vector3(0.5, 0, -1);
 let vup = new Vector3(0, 1, 0);
 let vfov = 36;
-
 let camera = createCamera(lookfrom, lookat, vup, vfov);
-
-/*********
- * Light *
- *********/
-const ambient = 0;
-const ambientIntensity = 0.65;
-
-const point = 1;
-const pointIntensity = 0.5;
-const pointPosition = new Vector3(1, 1, 0);
-
-const directional = 2;
-const directionalIntensity = 0.2;
-const directionalLookAt = new Vector3(1, 4, 4);
-
-const lights = [
-  [ambient, ambientIntensity, -1, -1, -1],
-  [
-    point,
-    pointIntensity,
-    pointPosition.toArray()[0],
-    pointPosition.toArray()[1],
-    pointPosition.toArray()[2],
-  ],
-  [
-    directional,
-    directionalIntensity,
-    directionalLookAt.toArray()[0],
-    directionalLookAt.toArray()[1],
-    directionalLookAt.toArray()[2],
-  ],
-];
 
 /***********
  * Kernael *
@@ -653,9 +620,7 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
 /**********
  * Render *
  **********/
-
 // animation
-
 let i = 0.01;
 setInterval(() => {
   if (spheres[2][1] >= 1) i = -0.01;
