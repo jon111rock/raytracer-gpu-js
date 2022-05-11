@@ -5,3 +5,5 @@ package-lock.json
 package.json
 webpack.config.js
 main.js.LICENSE.txt
+.DS_Store
+.gitignore
