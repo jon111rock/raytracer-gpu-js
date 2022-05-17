@@ -627,6 +627,8 @@ export default class Renderer extends Component {
       return;
     }
 
+    // console.log(this.props);
+
     // animation
     // let i = 0.01;
     // setInterval(() => {
@@ -639,7 +641,6 @@ export default class Renderer extends Component {
 
     render(imageWidth, imageHeight, camera, lights, spheres);
     const canvas = render.canvas;
-    console.log(canvas);
     document.getElementById("render").appendChild(canvas);
   }
   render() {
