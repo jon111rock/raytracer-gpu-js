@@ -97,6 +97,7 @@ export default class SpherePanel extends Component {
                   X
                   <input
                     type="number"
+                    step="0.1"
                     name="position-x"
                     onChange={(e) => this.save(e.target)}
                     defaultValue={this.state.sphereDate[0]}
@@ -106,6 +107,7 @@ export default class SpherePanel extends Component {
                   Y
                   <input
                     type="number"
+                    step="0.1"
                     name="position-y"
                     onChange={(e) => this.save(e.target)}
                     defaultValue={this.state.sphereDate[1]}
@@ -115,6 +117,7 @@ export default class SpherePanel extends Component {
                   Z
                   <input
                     type="number"
+                    step="0.1"
                     name="position-z"
                     onChange={(e) => this.save(e.target)}
                     defaultValue={this.state.sphereDate[2]}
@@ -129,6 +132,7 @@ export default class SpherePanel extends Component {
                   R
                   <input
                     type="number"
+                    step="0.1"
                     name="color-r"
                     onChange={(e) => this.save(e.target)}
                     defaultValue={this.state.sphereDate[3]}
@@ -138,6 +142,7 @@ export default class SpherePanel extends Component {
                   G
                   <input
                     type="number"
+                    step="0.1"
                     name="color-g"
                     onChange={(e) => this.save(e.target)}
                     defaultValue={this.state.sphereDate[4]}
@@ -147,6 +152,7 @@ export default class SpherePanel extends Component {
                   B
                   <input
                     type="number"
+                    step="0.1"
                     name="color-b"
                     onChange={(e) => this.save(e.target)}
                     defaultValue={this.state.sphereDate[5]}
@@ -158,6 +164,7 @@ export default class SpherePanel extends Component {
               <h3>radius</h3>
               <input
                 type="number"
+                step="0.1"
                 name="radius"
                 onChange={(e) => this.save(e.target)}
                 defaultValue={this.state.sphereDate[6]}
@@ -176,6 +183,7 @@ export default class SpherePanel extends Component {
               <h3>reflectivity</h3>
               <input
                 type="number"
+                step="0.01"
                 name="reflectivity"
                 onChange={(e) => this.save(e.target)}
                 defaultValue={this.state.sphereDate[8]}

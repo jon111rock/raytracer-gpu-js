@@ -7,3 +7,7 @@
 .position-list {
   list-style: none;
 }
+
+.attribute-list input {
+  margin-left: 0.25rem;
+}
