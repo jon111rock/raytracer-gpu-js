@@ -1,4 +1,7 @@
 import React, { Component } from "react";
+import PubSub from "pubsub-js";
+
+import { UPDATE_OBJECT } from "../../../event-types";
 import spheres from "../../Renderer/Objects/Spheres";
 import "./index.css";
 
@@ -15,7 +18,7 @@ export default class SpherePanel extends Component {
       i = 1;
     }
     if (props.name === "rightSphere") {
-      i = 3;
+      i = 2;
     }
 
     this.state = {
@@ -38,57 +41,63 @@ export default class SpherePanel extends Component {
     switch (e.name) {
       case "position-x":
         ary = [...this.state.sphereDate];
-        ary[0] = e.value;
+        ary[0] = Number(e.value);
         this.setState({ sphereDate: ary });
         break;
       case "position-y":
         ary = [...this.state.sphereDate];
-        ary[1] = e.value;
+        ary[1] = Number(e.value);
         this.setState({ sphereDate: ary });
         break;
       case "position-z":
         ary = [...this.state.sphereDate];
-        ary[2] = e.value;
+        ary[2] = Number(e.value);
         this.setState({ sphereDate: ary });
         break;
       case "color-r":
         ary = [...this.state.sphereDate];
-        ary[3] = e.value;
+        ary[3] = Number(e.value);
         this.setState({ sphereDate: ary });
         break;
       case "color-g":
         ary = [...this.state.sphereDate];
-        ary[4] = e.value;
+        ary[4] = Number(e.value);
         this.setState({ sphereDate: ary });
         break;
       case "color-b":
         ary = [...this.state.sphereDate];
-        ary[5] = e.value;
+        ary[5] = Number(e.value);
         this.setState({ sphereDate: ary });
         break;
       case "radius":
         ary = [...this.state.sphereDate];
-        ary[6] = e.value;
+        ary[6] = Number(e.value);
         this.setState({ sphereDate: ary });
         break;
       case "shine":
         ary = [...this.state.sphereDate];
-        ary[7] = e.value;
+        ary[7] = Number(e.value);
         this.setState({ sphereDate: ary });
         break;
       case "reflectivity":
         ary = [...this.state.sphereDate];
-        ary[8] = e.value;
+        ary[8] = Number(e.value);
         this.setState({ sphereDate: ary });
         break;
     }
+
+    PubSub.publish(UPDATE_OBJECT, {
+      name: this.props.name,
+      sphere: this.state.sphereDate,
+    });
   };
 
   render() {
+    const { name } = this.props;
     return (
       <div>
         <li className="control-item">
-          <h2>Left Sphere</h2>
+          <h2>{name}</h2>
           <ul className="attribute-list">
             <li className="attribute-item">
               <h3>position</h3>

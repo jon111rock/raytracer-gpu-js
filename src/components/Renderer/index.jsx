@@ -640,8 +640,27 @@ export default class Renderer extends Component {
     document.getElementById("render").appendChild(canvas);
 
     //update
-    this.updateObject = PubSub.subscribe(UPDATE_OBJECT, (_, date) => {
-      console.log(data);
+    this.updateObject = PubSub.subscribe(UPDATE_OBJECT, (msg, data) => {
+      let i;
+      if (data.name === "leftSphere") {
+        i = 0;
+      }
+      if (data.name === "centerSphere") {
+        i = 1;
+      }
+      if (data.name === "rightSphere") {
+        i = 2;
+      }
+
+      let ary = [...spheres[i]];
+      for (let i = 0; i < ary.length; i++) {
+        if (ary[i] != data.sphere[i]) {
+          ary[i] = data.sphere[i];
+        }
+      }
+
+      spheres[i] = ary;
+      render(imageWidth, imageHeight, camera, lights, spheres);
     });
   }
 
