@@ -8,7 +8,7 @@ export default class Panel extends Component {
     return (
       <div className="control">
         <ul className="control-list">
-          <SpherePanel />
+          <SpherePanel name="leftSphere" />
           <CameraPanel />
         </ul>
       </div>

@@ -1,9 +1,11 @@
 import React, { Component } from "react";
+import PubSub from "pubsub-js";
 import { GPU } from "./modules/gpu";
 import { Vector3, normalize, cross } from "./modules/vec3";
-import spheres from "./Objects/Sphere";
+import spheres from "./Objects/Spheres";
 import lights from "./Objects/Lights";
 import "./index.css";
+import { UPDATE_OBJECT } from "../../event-types";
 
 let gpu = new GPU();
 
@@ -620,6 +622,11 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
 }, settings);
 
 export default class Renderer extends Component {
+  state = {
+    lights: lights,
+    spheres: spheres,
+  };
+
   first = true;
   componentDidMount() {
     if (this.first) {
@@ -627,22 +634,21 @@ export default class Renderer extends Component {
       return;
     }
 
-    // console.log(this.props);
-
-    // animation
-    // let i = 0.01;
-    // setInterval(() => {
-    //   if (spheres[2][1] >= 1) i = -0.01;
-    //   if (spheres[2][1] <= 0) i = 0.01;
-    //   spheres[2][1] += i;
-    //   // spheres[0][0] += i;
-    //   render(imageWidth, imageHeight, camera, lights, spheres);
-    // }, 16);
-
-    render(imageWidth, imageHeight, camera, lights, spheres);
+    const { lights, spheres } = this.state;
     const canvas = render.canvas;
+    render(imageWidth, imageHeight, camera, lights, spheres);
     document.getElementById("render").appendChild(canvas);
+
+    //update
+    this.updateObject = PubSub.subscribe(UPDATE_OBJECT, (_, date) => {
+      console.log(data);
+    });
   }
+
+  componentWillUnmount() {
+    PubSub.unsubscribe(this.updateObject);
+  }
+
   render() {
     return (
       <div className="display">
