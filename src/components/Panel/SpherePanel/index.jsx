@@ -5,27 +5,84 @@ import "./index.css";
 export default class SpherePanel extends Component {
   constructor(props) {
     super();
-    this.state = {
-      name: props.name,
-    };
 
-    let i = 0;
-    if (this.state.name === "leftSphere") {
-      this.defaultSphere = {
-        x: spheres[i][0],
-        y: spheres[i][1],
-        z: spheres[i][2],
-        r: spheres[i][3],
-        g: spheres[i][4],
-        b: spheres[i][5],
-        radius: spheres[i][6],
-        shine: spheres[i][7],
-        reflect: spheres[i][8],
-      };
+    let i;
+
+    if (props.name === "leftSphere") {
+      i = 0;
     }
+    if (props.name === "centerSphere") {
+      i = 1;
+    }
+    if (props.name === "rightSphere") {
+      i = 3;
+    }
+
+    this.state = {
+      sphereDate: [
+        spheres[i][0],
+        spheres[i][1],
+        spheres[i][2],
+        spheres[i][3],
+        spheres[i][4],
+        spheres[i][5],
+        spheres[i][6],
+        spheres[i][7],
+        spheres[i][8],
+      ],
+    };
   }
 
-  save = (e) => {};
+  save = (e) => {
+    let ary = [];
+    switch (e.name) {
+      case "position-x":
+        ary = [...this.state.sphereDate];
+        ary[0] = e.value;
+        this.setState({ sphereDate: ary });
+        break;
+      case "position-y":
+        ary = [...this.state.sphereDate];
+        ary[1] = e.value;
+        this.setState({ sphereDate: ary });
+        break;
+      case "position-z":
+        ary = [...this.state.sphereDate];
+        ary[2] = e.value;
+        this.setState({ sphereDate: ary });
+        break;
+      case "color-r":
+        ary = [...this.state.sphereDate];
+        ary[3] = e.value;
+        this.setState({ sphereDate: ary });
+        break;
+      case "color-g":
+        ary = [...this.state.sphereDate];
+        ary[4] = e.value;
+        this.setState({ sphereDate: ary });
+        break;
+      case "color-b":
+        ary = [...this.state.sphereDate];
+        ary[5] = e.value;
+        this.setState({ sphereDate: ary });
+        break;
+      case "radius":
+        ary = [...this.state.sphereDate];
+        ary[6] = e.value;
+        this.setState({ sphereDate: ary });
+        break;
+      case "shine":
+        ary = [...this.state.sphereDate];
+        ary[7] = e.value;
+        this.setState({ sphereDate: ary });
+        break;
+      case "reflectivity":
+        ary = [...this.state.sphereDate];
+        ary[8] = e.value;
+        this.setState({ sphereDate: ary });
+        break;
+    }
+  };
 
   render() {
     return (
@@ -39,28 +96,28 @@ export default class SpherePanel extends Component {
                 <li className="position-item">
                   X
                   <input
-                    type="text"
+                    type="number"
                     name="position-x"
-                    onChange={(e) => this.save(e)}
-                    value={this.defaultSphere.x}
+                    onChange={(e) => this.save(e.target)}
+                    defaultValue={this.state.sphereDate[0]}
                   />
                 </li>
                 <li className="position-item">
                   Y
                   <input
-                    type="text"
+                    type="number"
                     name="position-y"
-                    onChange={(e) => this.save(e)}
-                    value={this.defaultSphere.y}
+                    onChange={(e) => this.save(e.target)}
+                    defaultValue={this.state.sphereDate[1]}
                   />
                 </li>
                 <li className="position-item">
-                  Z{" "}
+                  Z
                   <input
-                    type="text"
+                    type="number"
                     name="position-z"
-                    onChange={(e) => this.save(e)}
-                    value={this.defaultSphere.z}
+                    onChange={(e) => this.save(e.target)}
+                    defaultValue={this.state.sphereDate[2]}
                   />
                 </li>
               </ul>
@@ -71,28 +128,28 @@ export default class SpherePanel extends Component {
                 <li className="position-item">
                   R
                   <input
-                    type="text"
+                    type="number"
                     name="color-r"
-                    onChange={(e) => this.save(e)}
-                    value={this.defaultSphere.r}
+                    onChange={(e) => this.save(e.target)}
+                    defaultValue={this.state.sphereDate[3]}
                   />
                 </li>
                 <li className="position-item">
                   G
                   <input
-                    type="text"
+                    type="number"
                     name="color-g"
-                    onChange={(e) => this.save(e)}
-                    value={this.defaultSphere.g}
+                    onChange={(e) => this.save(e.target)}
+                    defaultValue={this.state.sphereDate[4]}
                   />
                 </li>
                 <li className="position-item">
                   B
                   <input
-                    type="text"
+                    type="number"
                     name="color-b"
-                    onChange={(e) => this.save(e)}
-                    value={this.defaultSphere.b}
+                    onChange={(e) => this.save(e.target)}
+                    defaultValue={this.state.sphereDate[5]}
                   />
                 </li>
               </ul>
@@ -100,28 +157,28 @@ export default class SpherePanel extends Component {
             <li className="attribute-item">
               <h3>radius</h3>
               <input
-                type="text"
+                type="number"
                 name="radius"
-                onChange={(e) => this.save(e)}
-                value={this.defaultSphere.radius}
+                onChange={(e) => this.save(e.target)}
+                defaultValue={this.state.sphereDate[6]}
               />
             </li>
             <li className="attribute-item">
               <h3>shine</h3>
               <input
-                type="text"
+                type="number"
                 name="shine"
-                onChange={(e) => this.save(e)}
-                value={this.defaultSphere.shine}
+                onChange={(e) => this.save(e.target)}
+                defaultValue={this.state.sphereDate[7]}
               />
             </li>
             <li className="attribute-item">
               <h3>reflectivity</h3>
               <input
-                type="text"
+                type="number"
                 name="reflectivity"
-                onChange={(e) => this.save(e)}
-                value={this.defaultSphere.reflect}
+                onChange={(e) => this.save(e.target)}
+                defaultValue={this.state.sphereDate[8]}
               />
             </li>
           </ul>
