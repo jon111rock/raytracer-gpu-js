@@ -1,17 +1,20 @@
 import React, { Component } from "react";
 import PubSub from "pubsub-js";
+
 import { GPU } from "./modules/gpu";
-import { Vector3, normalize, cross } from "./modules/vec3";
+import { UPDATE_OBJECT } from "../../event-types";
+
 import spheres from "./Objects/Spheres";
 import lights from "./Objects/Lights";
+import camera from "./Objects/Camera";
+
 import "./index.css";
-import { UPDATE_OBJECT } from "../../event-types";
 
 let gpu = new GPU();
 
-/************
- * Function *
- ************/
+/*******************
+ * Kernel Function *
+ *******************/
 function unitVectorX(vx, vy, vz) {
   let length = Math.sqrt(vx * vx + vy * vy + vz * vz);
   let div = 1.0 / length;
@@ -78,32 +81,6 @@ function reflectVector(ray_x, ray_y, ray_z, normal_x, normal_y, normal_z) {
   ];
 }
 
-function createCamera(lookfrom, lookat, vup, vfov) {
-  let thera = degreesToRadians(vfov);
-  let h = Math.tan(thera / 2);
-  let viewportHeight = 2 * h;
-  let viewportWidth = aspectRatio * viewportHeight;
-
-  let w = normalize(lookfrom.sub(lookat));
-  let u = normalize(cross(vup, w));
-  let v = cross(w, u);
-
-  const origin = lookfrom;
-  const horizontal = u.multiplyScalar(viewportWidth);
-  const vertical = v.multiplyScalar(viewportHeight);
-  const lowerLeftCorner = origin
-    .sub(horizontal.divideScalar(2))
-    .sub(vertical.divideScalar(2))
-    .sub(w);
-
-  return [
-    origin.toArray(),
-    horizontal.toArray(),
-    vertical.toArray(),
-    lowerLeftCorner.toArray(),
-  ];
-}
-
 let kernelFunctions = [
   unitVectorX,
   unitVectorY,
@@ -121,15 +98,6 @@ kernelFunctions.forEach((f) => gpu.addFunction(f));
 const aspectRatio = 16 / 9;
 const imageWidth = 800,
   imageHeight = parseInt(imageWidth / aspectRatio);
-
-/***********
- * Camera *
- ***********/
-let lookfrom = new Vector3(1, 0.5, 4);
-let lookat = new Vector3(0.5, 0, -1);
-let vup = new Vector3(0, 1, 0);
-let vfov = 36;
-let camera = createCamera(lookfrom, lookat, vup, vfov);
 
 /***********
  * Kernael *
