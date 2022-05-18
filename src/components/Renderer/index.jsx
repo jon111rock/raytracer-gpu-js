@@ -590,24 +590,16 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
 }, settings);
 
 export default class Renderer extends Component {
-  state = {
-    lights: lights,
-    spheres: spheres,
-  };
-
   first = true;
-  componentDidMount() {
-    if (this.first) {
-      this.first = false;
-      return;
-    }
 
-    const { lights, spheres } = this.state;
+  initScene = () => {
     const canvas = render.canvas;
     render(imageWidth, imageHeight, camera, lights, spheres);
     document.getElementById("render").appendChild(canvas);
+  };
 
-    //update
+  updateSphere = () => {
+    //update sphere
     this.updateObject = PubSub.subscribe(UPDATE_OBJECT, (msg, data) => {
       let i;
       if (data.name === "leftSphere") {
@@ -630,6 +622,16 @@ export default class Renderer extends Component {
       spheres[i] = ary;
       render(imageWidth, imageHeight, camera, lights, spheres);
     });
+  };
+
+  componentDidMount() {
+    if (this.first) {
+      this.first = false;
+      return;
+    }
+
+    this.initScene();
+    this.updateSphere();
   }
 
   componentWillUnmount() {
