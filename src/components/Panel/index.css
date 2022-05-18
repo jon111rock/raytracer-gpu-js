@@ -1,0 +1,10 @@
+.control {
+  padding: 1rem 0;
+}
+
+/* Control panel */
+.control-list {
+  list-style: none;
+  display: flex;
+  gap: 3rem;
+}

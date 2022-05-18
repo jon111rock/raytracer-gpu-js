@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/jon111rock/raytracer-gpu-js#readme",
   "dependencies": {
+    "pubsub-js": "^1.9.4",
     "react": "^18.1.0",
     "react-dom": "^18.1.0"
   },
