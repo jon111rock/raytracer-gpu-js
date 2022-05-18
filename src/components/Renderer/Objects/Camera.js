@@ -37,6 +37,13 @@ let lookfrom = new Vector3(1, 0.5, 4);
 let lookat = new Vector3(0.5, 0, -1);
 let vup = new Vector3(0, 1, 0);
 let vfov = 36;
-let camera = createCamera(lookfrom, lookat, vup, vfov);
 
-export default camera;
+let defaultSetting = {
+  lookfrom: lookfrom.toArray(),
+  lookat: lookat.toArray(),
+  vup: vup.toArray(),
+  vfov: vfov,
+};
+let defaultCamera = createCamera(lookfrom, lookat, vup, vfov);
+
+export { defaultSetting, defaultCamera, degreesToRadians, createCamera };

@@ -2,11 +2,12 @@ import React, { Component } from "react";
 import PubSub from "pubsub-js";
 
 import { GPU } from "./modules/gpu";
-import { UPDATE_OBJECT } from "../../event-types";
+import { UPDATE_OBJECT, UPDATE_CAMERA } from "../../event-types";
+import { Vector3 } from "./modules/vec3";
 
 import spheres from "./Objects/Spheres";
 import lights from "./Objects/Lights";
-import camera from "./Objects/Camera";
+import * as Camera from "./Objects/Camera";
 
 import "./index.css";
 
@@ -589,6 +590,7 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
   this.color(final_color_r, final_color_g, final_color_b, 1);
 }, settings);
 
+const camera = Camera.defaultCamera;
 export default class Renderer extends Component {
   first = true;
 
@@ -600,7 +602,7 @@ export default class Renderer extends Component {
 
   updateSphere = () => {
     //update sphere
-    this.updateObject = PubSub.subscribe(UPDATE_OBJECT, (msg, data) => {
+    this.updateObjectToken = PubSub.subscribe(UPDATE_OBJECT, (msg, data) => {
       let i;
       if (data.name === "leftSphere") {
         i = 0;
@@ -624,6 +626,26 @@ export default class Renderer extends Component {
     });
   };
 
+  updateCamera = () => {
+    const updateCameraToken = PubSub.subscribe(UPDATE_CAMERA, (_, data) => {
+      const lookfrom = new Vector3(
+        data.lookfrom[0],
+        data.lookfrom[1],
+        data.lookfrom[2]
+      );
+      const lookat = new Vector3(
+        data.lookat[0],
+        data.lookat[1],
+        data.lookat[2]
+      );
+      const vup = new Vector3(data.vup[0], data.vup[1], data.vup[2]);
+      const vfov = data.vfov;
+
+      const camera = Camera.createCamera(lookfrom, lookat, vup, vfov);
+      render(imageWidth, imageHeight, camera, lights, spheres);
+    });
+  };
+
   componentDidMount() {
     if (this.first) {
       this.first = false;
@@ -632,10 +654,11 @@ export default class Renderer extends Component {
 
     this.initScene();
     this.updateSphere();
+    this.updateCamera();
   }
 
   componentWillUnmount() {
-    PubSub.unsubscribe(this.updateObject);
+    PubSub.unsubscribe(this.updateObjectToken);
   }
 
   render() {
