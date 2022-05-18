@@ -614,13 +614,13 @@ export default class Renderer extends Component {
         i = 2;
       }
 
-      let ary = [...spheres[i]];
-      for (let i = 0; i < ary.length; i++) {
-        if (ary[i] != data.sphere[i]) {
-          ary[i] = data.sphere[i];
-        }
-      }
-
+      let ary = [
+        ...data.sphere.position,
+        ...data.sphere.color,
+        data.sphere.radius,
+        data.sphere.shine,
+        data.sphere.reflect,
+      ];
       spheres[i] = ary;
       render(imageWidth, imageHeight, camera, lights, spheres);
     });
