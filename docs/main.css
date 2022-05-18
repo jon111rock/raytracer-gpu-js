@@ -1,26 +1,30 @@
-/*!*****************************************************************!*\
-  !*** css ./node_modules/css-loader/dist/cjs.js!./src/style.css ***!
-  \*****************************************************************/
-* {
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
-}
-
-input {
-  width: 3rem;
-}
-
-.container {
-  display: grid;
-  grid-template-columns: 1fr;
-  justify-items: center;
-}
-
+/*!*************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./src/components/Renderer/index.css ***!
+  \*************************************************************************************/
 .display {
   max-width: 1300px;
 }
 
+/*!**********************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./src/components/Panel/SpherePanel/index.css ***!
+  \**********************************************************************************************/
+.attribute-list {
+  list-style: none;
+}
+.attribute-item {
+  margin-top: 0.5rem;
+}
+.position-list {
+  list-style: none;
+}
+
+.attribute-list input {
+  margin-left: 0.25rem;
+}
+
+/*!**********************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./src/components/Panel/index.css ***!
+  \**********************************************************************************/
 .control {
   padding: 1rem 0;
 }
@@ -31,13 +35,21 @@ input {
   display: flex;
   gap: 3rem;
 }
-.attribute-list {
-  list-style: none;
+
+/*!***************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./src/App.css ***!
+  \***************************************************************/
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
 }
-.attribute-item {
-  margin-top: 0.5rem;
+input {
+  width: 3rem;
 }
-.position-list {
-  list-style: none;
+.container {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: center;
 }
 
