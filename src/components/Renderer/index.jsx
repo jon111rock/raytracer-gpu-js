@@ -590,7 +590,7 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
   this.color(final_color_r, final_color_g, final_color_b, 1);
 }, settings);
 
-const camera = Camera.defaultCamera;
+let camera = Camera.defaultCamera;
 export default class Renderer extends Component {
   first = true;
 
@@ -641,7 +641,7 @@ export default class Renderer extends Component {
       const vup = new Vector3(data.vup[0], data.vup[1], data.vup[2]);
       const vfov = data.vfov;
 
-      const camera = Camera.createCamera(lookfrom, lookat, vup, vfov);
+      camera = Camera.createCamera(lookfrom, lookat, vup, vfov);
       render(imageWidth, imageHeight, camera, lights, spheres);
     });
   };
