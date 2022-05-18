@@ -646,6 +646,20 @@ export default class Renderer extends Component {
     });
   };
 
+  addAnimation = () => {
+    let i = 0.01;
+    setInterval(() => {
+      if (spheres[1][1] >= 1) {
+        i = -0.01;
+      }
+      if (spheres[1][1] <= 0.2) {
+        i = 0.01;
+      }
+      spheres[1][1] += i;
+      render(imageWidth, imageHeight, camera, lights, spheres);
+    }, 15);
+  };
+
   componentDidMount() {
     if (this.first) {
       this.first = false;
@@ -655,6 +669,7 @@ export default class Renderer extends Component {
     this.initScene();
     this.updateSphere();
     this.updateCamera();
+    this.addAnimation();
   }
 
   componentWillUnmount() {
