@@ -1,7 +1,13 @@
+/*!*************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./src/components/Renderer/index.css ***!
+  \*************************************************************************************/
 .display {
   max-width: 1300px;
 }
 
+/*!**********************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./src/components/Panel/SpherePanel/index.css ***!
+  \**********************************************************************************************/
 /* General styling for the collapsible section */
 .sphere-panel {
   border: 1px solid #ddd; /* Light border */
@@ -132,6 +138,9 @@
   margin: 0;
 }
 
+/*!**********************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./src/components/Panel/CameraPanel/index.css ***!
+  \**********************************************************************************************/
 /* General styling for the collapsible section */
 .camera-panel { /* Use specific class */
   border: 1px solid #ddd;
@@ -260,6 +269,9 @@
   margin: 0;
 }
 
+/*!**********************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./src/components/Panel/index.css ***!
+  \**********************************************************************************/
 .control {
   /* Padding is now handled by App.css */
   /* padding: 1rem 0; */
@@ -274,6 +286,9 @@
   padding: 0; /* Remove default ul padding */
 }
 
+/*!***************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./src/App.css ***!
+  \***************************************************************/
 * {
   padding: 0;
   margin: 0;
