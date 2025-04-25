@@ -3,11 +3,59 @@
   margin: 0;
   box-sizing: border-box;
 }
-input {
-  width: 3rem;
+
+body, html, #root {
+  height: 100%; /* Ensure root elements take full height */
+  overflow: hidden; /* Prevent body scroll */
 }
+
+/* input {
+  width: 3rem;
+} */
+
 .container {
-  display: grid;
-  grid-template-columns: 1fr;
-  justify-items: center;
+  display: flex; /* Use Flexbox for side-by-side layout */
+  height: 100vh; /* Make container take full viewport height */
+  /* Remove grid properties */
+  /* grid-template-columns: 1fr; */
+  /* justify-items: center; */
+}
+
+/* Panel styling - defined in Panel/index.css or here */
+/* Let's define basic layout here for clarity */
+.control { /* Assuming Panel renders a div with className='control' */
+  flex-basis: 350px; /* Set a fixed width for the panel */
+  flex-shrink: 0; /* Prevent panel from shrinking */
+  height: 100vh; /* Make panel take full height */
+  overflow-y: auto; /* Enable vertical scrolling within the panel */
+  padding: 1rem; /* Add some padding */
+  border-right: 1px solid #ccc; /* Optional separator */
+  background-color: #f8f8f8; /* Light background for panel */
+}
+
+/* Renderer styling - defined in Renderer/index.css or here */
+/* Let's define basic layout here */
+.display { /* Assuming Renderer renders a div with className='display' */
+  flex-grow: 1; /* Allow renderer to take remaining space */
+  height: 100vh; /* Make renderer take full height */
+  overflow: hidden; /* Prevent renderer itself from scrolling */
+  display: flex; /* Center the canvas if needed */
+  justify-content: center;
+  align-items: center;
+  background-color: #333; /* Dark background for contrast */
+}
+
+/* Target the canvas container inside Renderer */
+.display #render {
+  width: 100%; /* Or set specific dimensions */
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.display #render canvas {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* Ensure canvas scales correctly */
 }

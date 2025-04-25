@@ -7,209 +7,221 @@ import "./index.css";
 
 export default class SpherePanel extends Component {
   constructor(props) {
-    super();
+    super(props);
 
     let i;
 
     if (props.name === "leftSphere") {
       i = 0;
-    }
-    if (props.name === "centerSphere") {
+    } else if (props.name === "centerSphere") {
       i = 1;
-    }
-    if (props.name === "rightSphere") {
+    } else if (props.name === "rightSphere") {
       i = 2;
+    } else {
+      console.error("Invalid sphere name prop:", props.name);
+      i = 0;
     }
 
     this.state = {
-      sphereDate: {
-        position: [spheres[i][0], spheres[i][1], spheres[i][2]],
-        color: [spheres[i][3], spheres[i][4], spheres[i][5]],
-        radius: spheres[i][6],
-        shine: spheres[i][7],
-        reflect: spheres[i][8],
-      },
-
-      // sphereDate: [
-      //   spheres[i][0],
-      //   spheres[i][1],
-      //   spheres[i][2],
-      //   spheres[i][3],
-      //   spheres[i][4],
-      //   spheres[i][5],
-      //   spheres[i][6],
-      //   spheres[i][7],
-      //   spheres[i][8],
-      // ],
+      position: [spheres[i][0], spheres[i][1], spheres[i][2]],
+      color: [spheres[i][3], spheres[i][4], spheres[i][5]],
+      radius: spheres[i][6],
+      shine: spheres[i][7],
+      reflect: spheres[i][8],
     };
   }
 
-  save = (e) => {
-    let ary = {};
-    switch (e.name) {
-      case "position-x":
-        ary = { ...this.state.sphereDate };
-        ary.position[0] = Number(e.value);
-        this.setState({ sphereDate: ary });
-        break;
-      case "position-y":
-        ary = { ...this.state.sphereDate };
-        ary.position[1] = Number(e.value);
-        this.setState({ sphereDate: ary });
-        break;
-      case "position-z":
-        ary = { ...this.state.sphereDate };
-        ary.position[2] = Number(e.value);
-        this.setState({ sphereDate: ary });
-        break;
-      case "color-r":
-        ary = { ...this.state.sphereDate };
-        ary.color[0] = Number(e.value);
-        this.setState({ sphereDate: ary });
-        break;
-      case "color-g":
-        ary = { ...this.state.sphereDate };
-        ary.color[1] = Number(e.value);
-        this.setState({ sphereDate: ary });
-        break;
-      case "color-b":
-        ary = { ...this.state.sphereDate };
-        ary.position[2] = Number(e.value);
-        this.setState({ sphereDate: ary });
-        break;
-      case "radius":
-        ary = { ...this.state.sphereDate };
-        ary.radius = Number(e.value);
-        this.setState({ sphereDate: ary });
-        break;
-      case "shine":
-        ary = { ...this.state.sphereDate };
-        ary.shine = Number(e.value);
-        this.setState({ sphereDate: ary });
-        break;
-      case "reflectivity":
-        ary = { ...this.state.sphereDate };
-        ary.reflect = Number(e.value);
-        this.setState({ sphereDate: ary });
-        break;
-    }
+  handleChange = (event) => {
+    const { name, value, type } = event.target;
+    const numValue = Number(value);
 
-    PubSub.publish(UPDATE_OBJECT, {
-      name: this.props.name,
-      sphere: this.state.sphereDate,
-    });
+    this.setState(
+      (prevState) => {
+        const newState = { ...prevState };
+        const [group, indexOrProp] = name.split("-");
+
+        switch (group) {
+          case "position":
+            newState.position[parseInt(indexOrProp, 10)] = numValue;
+            break;
+          case "color":
+            newState.color[parseInt(indexOrProp, 10)] = numValue;
+            break;
+          case "radius":
+            newState.radius = numValue;
+            break;
+          case "shine":
+            newState.shine = numValue;
+            break;
+          case "reflectivity":
+            newState.reflect = numValue;
+            break;
+          default:
+            console.error("Unhandled input name:", name);
+            return prevState;
+        }
+        return newState;
+      },
+      () => {
+        PubSub.publish(UPDATE_OBJECT, {
+          name: this.props.name,
+          sphere: {
+            position: this.state.position,
+            color: this.state.color,
+            radius: this.state.radius,
+            shine: this.state.shine,
+            reflect: this.state.reflect,
+          }
+        });
+      }
+    );
   };
 
   render() {
     const { name } = this.props;
-    const { position, color, radius, shine, reflect } = this.state.sphereDate;
+    const { position, color, radius, shine, reflect } = this.state;
+
+    const ranges = {
+      position: { min: -3, max: 3, step: 0.1 },
+      color: { min: 0, max: 1, step: 0.01 },
+      radius: { min: 0.1, max: 2, step: 0.05 },
+      shine: { min: 1, max: 1000, step: 1 },
+      reflect: { min: 0, max: 1, step: 0.01 },
+    };
+
     return (
-      <div>
-        <li className="control-item">
-          <h2>{name}</h2>
-          <ul className="attribute-list">
-            <li className="attribute-item">
-              <h3>position</h3>
-              <ul className="position-list">
-                <li className="position-item">
-                  X
-                  <input
-                    type="number"
-                    step="0.1"
-                    name="position-x"
-                    onChange={(e) => this.save(e.target)}
-                    defaultValue={position[0]}
-                  />
-                </li>
-                <li className="position-item">
-                  Y
-                  <input
-                    type="number"
-                    step="0.1"
-                    name="position-y"
-                    onChange={(e) => this.save(e.target)}
-                    defaultValue={position[1]}
-                  />
-                </li>
-                <li className="position-item">
-                  Z
-                  <input
-                    type="number"
-                    step="0.1"
-                    name="position-z"
-                    onChange={(e) => this.save(e.target)}
-                    defaultValue={position[2]}
-                  />
-                </li>
-              </ul>
-            </li>
-            <li className="attribute-item">
-              <h3>Color</h3>
-              <ul className="position-list">
-                <li className="position-item">
-                  R
-                  <input
-                    type="number"
-                    step="0.1"
-                    name="color-r"
-                    onChange={(e) => this.save(e.target)}
-                    defaultValue={color[0]}
-                  />
-                </li>
-                <li className="position-item">
-                  G
-                  <input
-                    type="number"
-                    step="0.1"
-                    name="color-g"
-                    onChange={(e) => this.save(e.target)}
-                    defaultValue={color[1]}
-                  />
-                </li>
-                <li className="position-item">
-                  B
-                  <input
-                    type="number"
-                    step="0.1"
-                    name="color-b"
-                    onChange={(e) => this.save(e.target)}
-                    defaultValue={color[2]}
-                  />
-                </li>
-              </ul>
-            </li>
-            <li className="attribute-item">
-              <h3>radius</h3>
+      <details className="control-item sphere-panel">
+        <summary>{name}</summary>
+        <div className="attribute-list">
+          <div className="attribute-group">
+            <h4>Position</h4>
+            {["x", "y", "z"].map((axis, index) => (
+              <div className="attribute-item" key={axis}>
+                <label>{axis.toUpperCase()}</label>
+                <input
+                  type="range"
+                  name={`position-${index}`}
+                  min={ranges.position.min}
+                  max={ranges.position.max}
+                  step={ranges.position.step}
+                  value={position[index]}
+                  onChange={this.handleChange}
+                  title={position[index]}
+                />
+                <input
+                  type="number"
+                  name={`position-${index}`}
+                  step={ranges.position.step}
+                  value={position[index]}
+                  onChange={this.handleChange}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="attribute-group">
+            <h4>Color</h4>
+            {["r", "g", "b"].map((channel, index) => (
+              <div className="attribute-item" key={channel}>
+                <label>{channel.toUpperCase()}</label>
+                <input
+                  type="range"
+                  name={`color-${index}`}
+                  min={ranges.color.min}
+                  max={ranges.color.max}
+                  step={ranges.color.step}
+                  value={color[index]}
+                  onChange={this.handleChange}
+                  title={color[index]}
+                />
+                <input
+                  type="number"
+                  name={`color-${index}`}
+                  min={ranges.color.min}
+                  max={ranges.color.max}
+                  step={ranges.color.step}
+                  value={color[index]}
+                  onChange={this.handleChange}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="attribute-group">
+            <h4>Radius</h4>
+            <div className="attribute-item">
+              <label>R</label>
+              <input
+                type="range"
+                name="radius"
+                min={ranges.radius.min}
+                max={ranges.radius.max}
+                step={ranges.radius.step}
+                value={radius}
+                onChange={this.handleChange}
+                title={radius}
+              />
               <input
                 type="number"
-                step="0.1"
                 name="radius"
-                onChange={(e) => this.save(e.target)}
-                defaultValue={radius}
+                step={ranges.radius.step}
+                value={radius}
+                onChange={this.handleChange}
               />
-            </li>
-            <li className="attribute-item">
-              <h3>shine</h3>
+            </div>
+          </div>
+
+          <div className="attribute-group">
+            <h4>Shine</h4>
+            <div className="attribute-item">
+              <label>S</label>
+              <input
+                type="range"
+                name="shine"
+                min={ranges.shine.min}
+                max={ranges.shine.max}
+                step={ranges.shine.step}
+                value={shine}
+                onChange={this.handleChange}
+                title={shine}
+              />
               <input
                 type="number"
                 name="shine"
-                onChange={(e) => this.save(e.target)}
-                defaultValue={shine}
+                step={ranges.shine.step}
+                value={shine}
+                onChange={this.handleChange}
               />
-            </li>
-            <li className="attribute-item">
-              <h3>reflectivity</h3>
+            </div>
+          </div>
+
+          <div className="attribute-group">
+            <h4>Reflectivity</h4>
+            <div className="attribute-item">
+              <label>Ref</label>
+              <input
+                type="range"
+                name="reflectivity"
+                min={ranges.reflect.min}
+                max={ranges.reflect.max}
+                step={ranges.reflect.step}
+                value={reflect}
+                onChange={this.handleChange}
+                title={reflect}
+              />
               <input
                 type="number"
-                step="0.01"
                 name="reflectivity"
-                onChange={(e) => this.save(e.target)}
-                defaultValue={reflect}
+                step={ranges.reflect.step}
+                min={ranges.reflect.min}
+                max={ranges.reflect.max}
+                value={reflect}
+                onChange={this.handleChange}
               />
-            </li>
-          </ul>
-        </li>
-      </div>
+            </div>
+          </div>
+        </div>
+      </details>
     );
   }
 }
