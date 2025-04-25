@@ -1,10 +1,13 @@
 .control {
-  padding: 1rem 0;
+  /* Padding is now handled by App.css */
+  /* padding: 1rem 0; */
 }
 
 /* Control panel */
 .control-list {
   list-style: none;
-  display: flex;
-  gap: 3rem;
+  /* Remove horizontal flex layout */
+  /* display: flex; */
+  /* gap: 3rem; */
+  padding: 0; /* Remove default ul padding */
 }
