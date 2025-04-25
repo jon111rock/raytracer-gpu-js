@@ -34,7 +34,7 @@ function unitVectorZ(vx, vy, vz) {
   return div * vz;
 }
 
-function dot(v1_x, v1_y, v1_z, v2_x, v2_y, v2_z) {
+function vectorDot(v1_x, v1_y, v1_z, v2_x, v2_y, v2_z) {
   return v1_x * v2_x + v1_y * v2_y + v1_z * v2_z;
 }
 
@@ -86,7 +86,7 @@ let kernelFunctions = [
   unitVectorX,
   unitVectorY,
   unitVectorZ,
-  dot,
+  vectorDot,
   degreesToRadians,
   intersectRaySphere,
   reflectVector,
@@ -313,7 +313,7 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
         }
 
         // diffuse
-        let N_dot_L = dot(
+        let N_dot_L = vectorDot(
           hitNormal_ux,
           hitNormal_uy,
           hitNormal_uz,
@@ -339,7 +339,7 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
           let V_x = -1 * ray_d_x;
           let V_y = -1 * ray_d_y;
           let V_z = -1 * ray_d_z;
-          let R_dot_V = dot(R_x, R_y, R_z, V_x, V_y, V_z);
+          let R_dot_V = vectorDot(R_x, R_y, R_z, V_x, V_y, V_z);
           let length_R = Math.sqrt(R_x * R_x + R_y * R_y + R_z * R_z);
           let length_V = Math.sqrt(V_x * V_x + V_y * V_y + V_z * V_z);
 
@@ -524,7 +524,7 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
             }
 
             // diffuse
-            let N_dot_L = dot(
+            let N_dot_L = vectorDot(
               hitNormal_ux,
               hitNormal_uy,
               hitNormal_uz,
@@ -550,7 +550,7 @@ const render = gpu.createKernel(function (w, h, camera, lights, spheres) {
               let V_x = -1 * ray_d_x;
               let V_y = -1 * ray_d_y;
               let V_z = -1 * ray_d_z;
-              let R_dot_V = dot(R_x, R_y, R_z, V_x, V_y, V_z);
+              let R_dot_V = vectorDot(R_x, R_y, R_z, V_x, V_y, V_z);
               let length_R = Math.sqrt(R_x * R_x + R_y * R_y + R_z * R_z);
               let length_V = Math.sqrt(V_x * V_x + V_y * V_y + V_z * V_z);
 
